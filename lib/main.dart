@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+// Isolasi pustaka path, hanya ambil fungsi 'join' untuk mematikan anomali context
+import 'package:path/path.dart' show join; 
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:intl/intl.dart';
 
@@ -70,10 +71,10 @@ class _CoreReceiverNodeState extends State<CoreReceiverNode> {
   void initState() {
     super.initState();
     ReceiveSharingIntent.getTextStream().listen((String value) {
-      setState(() => _teksController.text = value);
+      if (mounted) setState(() => _teksController.text = value);
     });
     ReceiveSharingIntent.getInitialText().then((String? value) {
-      if (value != null) setState(() => _teksController.text = value);
+      if (value != null && mounted) setState(() => _teksController.text = value);
     });
   }
 
@@ -85,7 +86,7 @@ class _CoreReceiverNodeState extends State<CoreReceiverNode> {
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context, initialTime: TimeOfDay.fromDateTime(_tAbs),
       );
-      if (pickedTime != null) {
+      if (pickedTime != null && mounted) {
         setState(() {
           _tAbs = DateTime(pickedDate.year, pickedDate.month, pickedDate.day, pickedTime.hour, pickedTime.minute);
         });
@@ -104,9 +105,12 @@ class _CoreReceiverNodeState extends State<CoreReceiverNode> {
     };
     try {
       await DatabaseNode.instance.insertStatus(data);
+      // Injeksi kontrol asinkron untuk mencegah memory leak dan error context
+      if (!mounted) return; 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Data Terkunci. Sanad Diamankan.')));
       _teksController.clear(); _sanadController.clear();
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Penolakan: Duplikasi Sanad.')));
     }
   }
