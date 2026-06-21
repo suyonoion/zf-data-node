@@ -1,0 +1,58 @@
+name: Pabrikasi ZF Data Node APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Kompilasi APK Mesin Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ekstraksi Kode Inti
+        uses: actions/checkout@v3
+
+      - name: Instalasi Mesin Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Instalasi Mesin Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.0'
+          channel: 'stable'
+
+      - name: Otomatisasi Scaffolding Kerangka Android
+        run: flutter create --project-name zf_data_node --org com.masion --platforms android .
+
+      - name: Injeksi Master Protocol (Share Intent OS Android)
+        run: |
+          python -c "
+          path = 'android/app/src/main/AndroidManifest.xml'
+          with open(path, 'r') as f: data = f.read()
+          intent = '''
+              <intent-filter>
+                  <action android:name=\"android.intent.action.SEND\" />
+                  <category android:name=\"android.intent.category.DEFAULT\" />
+                  <data android:mimeType=\"text/plain\" />
+              </intent-filter>
+          '''
+          data = data.replace('</activity>', f'{intent}</activity>')
+          with open(path, 'w') as f: f.write(data)
+          "
+
+      - name: Unduh Pustaka
+        run: flutter pub get
+
+      - name: Eksekusi Kompilasi Rilis Absolut
+        run: flutter build apk --release --no-tree-shake-icons
+
+      - name: Ekstraksi Artefak APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: ZF-Data-Node-Release
+          path: build/app/outputs/flutter-apk/app-release.apk

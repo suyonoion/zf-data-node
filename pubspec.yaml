@@ -1,0 +1,15 @@
+name: zf_data_node
+description: Autonomous Data Node ZF
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  receive_sharing_intent: ^1.5.0
+  intl: ^0.18.1
