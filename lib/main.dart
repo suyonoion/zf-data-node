@@ -70,13 +70,22 @@ class _CoreReceiverNodeState extends State<CoreReceiverNode> {
   @override
   void initState() {
     super.initState();
-    ReceiveSharingIntent.getTextStream().listen((String value) {
-      if (mounted) setState(() => _teksController.text = value);
+    // Protokol API Baru (v1.5.0+) - Transmisi teks kini dikapsulasi dalam list SharedMediaFile
+    ReceiveSharingIntent.instance.getMediaStream().listen((List<SharedMediaFile> value) {
+      if (mounted && value.isNotEmpty) {
+        setState(() => _teksController.text = value.first.path);
+        ReceiveSharingIntent.instance.reset(); // Bersihkan memori OS
+      }
     });
-    ReceiveSharingIntent.getInitialText().then((String? value) {
-      if (value != null && mounted) setState(() => _teksController.text = value);
+
+    ReceiveSharingIntent.instance.getInitialMedia().then((List<SharedMediaFile> value) {
+      if (mounted && value.isNotEmpty) {
+        setState(() => _teksController.text = value.first.path);
+        ReceiveSharingIntent.instance.reset(); // Bersihkan memori OS
+      }
     });
   }
+
 
   Future<void> _kalibrasiWaktuAbsolut() async {
     final DateTime? pickedDate = await showDatePicker(

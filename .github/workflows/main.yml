@@ -28,12 +28,14 @@ jobs:
 
       - name: Otomatisasi Scaffolding Kerangka Android
         run: flutter create --project-name zf_data_node --org com.masion --platforms android .
-
-      - name: Injeksi Master Protocol (Share Intent OS Android)
+  
+      - name: Injeksi Master Protocol & Kalibrasi SDK 34
         run: |
           python -c "
-          path = 'android/app/src/main/AndroidManifest.xml'
-          with open(path, 'r') as f: data = f.read()
+          import os
+          # 1. Injeksi Gerbang Intent OS Android
+          path_manifest = 'android/app/src/main/AndroidManifest.xml'
+          with open(path_manifest, 'r') as f: data = f.read()
           intent = '''
               <intent-filter>
                   <action android:name=\"android.intent.action.SEND\" />
@@ -42,8 +44,16 @@ jobs:
               </intent-filter>
           '''
           data = data.replace('</activity>', f'{intent}</activity>')
-          with open(path, 'w') as f: f.write(data)
+          with open(path_manifest, 'w') as f: f.write(data)
+
+          # 2. Kalibrasi Paksa Android SDK ke Versi 34
+          path_gradle = 'android/app/build.gradle'
+          with open(path_gradle, 'r') as f: gradle_data = f.read()
+          gradle_data = gradle_data.replace('compileSdkVersion flutter.compileSdkVersion', 'compileSdkVersion 34')
+          gradle_data = gradle_data.replace('targetSdkVersion flutter.targetSdkVersion', 'targetSdkVersion 34')
+          with open(path_gradle, 'w') as f: f.write(gradle_data)
           "
+
 
       - name: Unduh Pustaka
         run: flutter pub get
