@@ -29,7 +29,7 @@ jobs:
       - name: Otomatisasi Scaffolding Kerangka Android
         run: flutter create --project-name zf_data_node --org com.masion --platforms android .
   
-      - name: Injeksi Master Protocol & Kalibrasi SDK 34
+      - name: Injeksi Master Protocol & Kalibrasi SDK
         run: |
           python -c "
           import os
@@ -46,11 +46,12 @@ jobs:
           data = data.replace('</activity>', f'{intent}</activity>')
           with open(path_manifest, 'w') as f: f.write(data)
 
-          # 2. Kalibrasi Paksa Android SDK ke Versi 34
+          # 2. Kalibrasi Paksa Batas SDK Android (Kerapatan Informasi)
           path_gradle = 'android/app/build.gradle'
           with open(path_gradle, 'r') as f: gradle_data = f.read()
           gradle_data = gradle_data.replace('compileSdkVersion flutter.compileSdkVersion', 'compileSdkVersion 34')
           gradle_data = gradle_data.replace('targetSdkVersion flutter.targetSdkVersion', 'targetSdkVersion 34')
+          gradle_data = gradle_data.replace('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 19')
           with open(path_gradle, 'w') as f: f.write(gradle_data)
           "
 
